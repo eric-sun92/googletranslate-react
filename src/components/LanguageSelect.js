@@ -1,6 +1,7 @@
 const LanguageSelect = ({ type, setShowModal, selectedLanguage }) => {
+  console.log(type);
   return (
-    <div className="select-drop-down" onClick={() => setShowModal(type)}>
+    <div onClick={() => setShowModal(type)} className="select-drop-down">
       <input value={selectedLanguage} />
       <div className="down-arrow">
         <svg

@@ -1,19 +1,70 @@
 // import "./components/LanguageSelect";
 // import "./components/Arrow";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Arrow from "./components/Arrow";
 import TextInput from "./components/TextInput";
 import Modal from "./components/Modal";
+import axios from "axios";
+import Button from "./components/Button";
 
 function App() {
   const [showModal, setShowModal] = useState(null);
 
-  const [fromLangauge, setFromLanguage] = useState("English");
-  const [toLangauge, setToLanguage] = useState("Polish");
+  const [fromLanguage, setFromLanguage] = useState("English");
+  const [toLanguage, setToLanguage] = useState("Polish");
+
+  const [fromText, setFromText] = useState("");
+  const [toText, setToText] = useState("");
+
+  const [languages, setLanguages] = useState(null);
+
+  console.log("test +", showModal);
+
+  const getLanguages = async () => {
+    const options = {
+      method: "GET",
+      url: "http://localhost:8000/languages",
+    };
+
+    await axios
+      .request(options)
+      .then(function (response) {
+        setLanguages(response.data);
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  };
+
+  useEffect(() => {
+    getLanguages();
+  }, []);
 
   const handleClick = () => {
-    setFromLanguage(toLangauge);
-    setToLanguage(fromLangauge);
+    setFromLanguage(toLanguage);
+    setToLanguage(fromLanguage);
+  };
+
+  const translate = () => {
+    const data = {
+      fromText,
+      toLanguage,
+      fromLanguage,
+    };
+    const options = {
+      method: "GET",
+      url: "http://localhost:8000/translation",
+      params: data,
+    };
+
+    axios
+      .request(options)
+      .then(function (response) {
+        setToText(response.data);
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
   };
 
   return (
@@ -22,21 +73,38 @@ function App() {
         <>
           <TextInput
             type="input"
-            selectedLanguage={fromLangauge}
             setShowModal={setShowModal}
+            selectedLanguage={fromLanguage}
+            fromText={fromText}
+            setToText={setToText}
+            setFromText={setFromText}
           />
           <div className="arrow-container" onClick={handleClick}>
             <Arrow />
           </div>
           <TextInput
             type="output"
-            selectedLanguage={toLangauge}
             setShowModal={setShowModal}
+            selectedLanguage={toLanguage}
+            toText={toText}
+            setToText={setToText}
           />
+          <div className="button-container" onClick={translate}>
+            <Button />
+          </div>
         </>
       )}
-      {showModal == "input" && <Modal type="input" />}
-      {showModal == "output" && <Modal type="output" />}
+      {showModal && (
+        <Modal
+          showModal={showModal}
+          setShowModal={setShowModal}
+          languages={languages}
+          chosenLanguage={showModal === "input" ? fromLanguage : toLanguage}
+          setChosenLanguage={
+            showModal === "input" ? setFromLanguage : setToLanguage
+          }
+        />
+      )}
     </div>
   );
 }
